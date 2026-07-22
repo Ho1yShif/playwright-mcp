@@ -1,0 +1,30 @@
+# Playwright MCP on Render — Blueprint.
+# Docs: https://render.com/docs/blueprint-spec
+#
+# Single Docker web service: a thin wrapper (Dockerfile.render) over the official
+# mcr.microsoft.com/playwright/mcp image, which already bakes in headless Chromium.
+# No health check is declared on purpose: /mcp is a Streamable-HTTP endpoint that
+# does not answer a plain GET with 2xx, so Render's default open-port detection is
+# the correct liveness signal here.
+previews:
+  generation: off
+
+services:
+  - type: web
+    name: playwright-mcp
+    runtime: docker
+    region: oregon
+    # Headless Chromium needs more than starter's 512 MB or it OOMs on launch.
+    plan: standard
+    dockerfilePath: ./Dockerfile.render
+    dockerContext: .
+    envVars:
+      # Render routes external traffic to this port; the entrypoint binds to it.
+      - key: PORT
+        value: 10000
+      # DEMO mode is OFF by default: a fork gets the full, all-capabilities server.
+      # Flip to "true" ONLY on a public demo you host yourself — it enables a
+      # locked-down, per-connection-isolated, SSRF-guarded browser session.
+      # Plain value (not a secret). See the README "Demo mode" and "Security" notes.
+      - key: DEMO
+        value: "false"

@@ -1,0 +1,14 @@
+# The Render wrapper (Dockerfile.render) only needs render-entrypoint.sh, so keep
+# the build context tiny. The upstream Dockerfile build context is unaffected.
+node_modules/
+.git/
+.github/
+.devcontainer/
+.claude/
+tests/
+test-results/
+playwright-report/
+sessions/
+.env
+*.log
+.DS_Store

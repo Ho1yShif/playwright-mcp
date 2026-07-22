@@ -1,0 +1,10 @@
+# syntax=docker/dockerfile:1
+# Thin Render wrapper over the official Playwright MCP image.
+# The base image already has headless Chromium + all system deps baked in, so
+# there is no browser download or source build here — just a DEMO-aware entrypoint.
+# Bump the tag in lockstep with render.yaml when rolling Playwright MCP.
+FROM mcr.microsoft.com/playwright/mcp:v0.0.77
+
+COPY --chmod=0755 render-entrypoint.sh /usr/local/bin/render-entrypoint.sh
+
+ENTRYPOINT ["/usr/local/bin/render-entrypoint.sh"]
