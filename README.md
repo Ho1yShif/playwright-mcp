@@ -4,6 +4,10 @@ Deploy [Playwright MCP](https://github.com/microsoft/playwright-mcp) on Render i
 
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/render-examples/playwright-mcp-render)
 
+
+https://github.com/user-attachments/assets/0f31c279-f2e0-431f-a854-50677bd800c5
+
+
 ## What it does
 
 [Playwright MCP](https://github.com/microsoft/playwright-mcp) is a Model Context Protocol server that lets an LLM open a real browser, navigate, click, type, and read pages through structured accessibility snapshots (not screenshots). It normally runs locally via `npx @playwright/mcp`. This template runs it as a single Render web service instead, so any MCP client can connect to a shared HTTPS URL.
