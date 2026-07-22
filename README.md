@@ -12,6 +12,39 @@ It's a **thin wrapper** over the official `mcr.microsoft.com/playwright/mcp` ima
 
 For the full tool list, config options, and client setup, see the [upstream README](https://github.com/microsoft/playwright-mcp).
 
+## Architecture
+
+One Render web service runs the official Playwright MCP image with a thin entrypoint wrapper. An MCP client speaks Streamable HTTP to `/mcp` over Render's TLS-terminating edge; the server drives a headless Chromium in the same container and returns accessibility snapshots.
+
+```
+┌─────────────┐   HTTPS /mcp    ┌────────────────────────────────────────────────┐
+│  MCP client │ ──────────────► │ Render web service  (Docker, standard plan)    │
+│ (Claude,    │  Streamable     │                                                │
+│  Cursor, …) │ ◄────────────── │  render-entrypoint.sh                          │
+└─────────────┘   snapshots     │    │ reads PORT, DEMO, RENDER_EXTERNAL_HOSTNAME│
+                                │    ▼                                           │
+                                │  node /app/cli.js  --headless --no-sandbox …   │
+                                │    │                                           │
+                                │    ▼                                           │
+                                │  headless Chromium  (baked into base image)    │
+                                └────────────────────────────────────────────────┘
+```
+
+**How a deploy is assembled:**
+
+| File | Role |
+|------|------|
+| [`render.yaml`](./render.yaml) | Blueprint. Declares the single Docker web service, its plan/region, and the `PORT`/`DEMO` env vars. This is what the Deploy button reads. |
+| [`Dockerfile.render`](./Dockerfile.render) | Thin wrapper over `mcr.microsoft.com/playwright/mcp` (headless Chromium pre-baked). Adds only the entrypoint — no browser download, no source build. |
+| [`render-entrypoint.sh`](./render-entrypoint.sh) | PID 1. Reads `PORT` and `DEMO`, resolves the allowed-hosts value, then `exec`s `node /app/cli.js` with the right flags for the chosen mode. |
+| [`.env.example`](./.env.example) | Documents the same knobs for running the container locally. |
+
+**Key properties:**
+
+- **Thin wrapper, no fork of the tool.** The Playwright MCP version is pinned by the base-image tag in `Dockerfile.render`; upgrades are a one-line tag bump (see [Rolling Playwright MCP](#rolling-playwright-mcp)).
+- **Stateless.** No database, no disk, no secrets. Each request drives an ephemeral browser context; nothing persists between requests (unless you attach a [Disk](https://render.com/docs/disks) — see [Configuration](#configuration)).
+- **Two startup profiles from one image.** The `DEMO` env var selects between the full server and a locked-down public demo entirely inside the entrypoint (see [Demo mode](#demo-mode)).
+
 ## Deploy
 
 1. Click **Deploy to Render** above (or fork this repo and create a new Blueprint from it).
