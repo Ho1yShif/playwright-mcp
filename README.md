@@ -46,7 +46,7 @@ Then ask your assistant to browse — e.g. *"Open example.com and give me the pa
 
 ## Configuration
 
-Everything is set in [`render.yaml`](./render.yaml); [`​.env.example`](./.env.example) documents the same knobs for running locally.
+Everything is set in [`render.yaml`](./render.yaml); [`.env.example`](./.env.example) documents the same knobs for running locally.
 
 | Env var | Default | What it's for |
 |---------|---------|---------------|
